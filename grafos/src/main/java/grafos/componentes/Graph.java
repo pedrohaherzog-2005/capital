@@ -7,66 +7,84 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class Graph {
-  private int V;
-  private List<List<Node>> adj;
-  class Node {
-    int vertex;
-    double weight;
-    Node(int vertex, double weight) {
-      this.vertex = vertex;
-      this.weight = weight;
+  private int totalVertices; // Quantidade total de vértices
+  private List<List<Adjacency>> listaAdjacencia; // Lista de adjacência
+
+  // Classe interna representando um vizinho (nó adjacente)
+  class Adjacency {
+    int destino; // Vértice de destino
+    double distancia; // Peso (distância) da aresta
+
+    Adjacency(int destino, double distancia) {
+      this.destino = destino;
+      this.distancia = distancia;
     }
   }
-  public Graph(int V) {
-    this.V = V;
-    adj = new ArrayList<>();
-    for (int i = 0; i < V; i++) {
-      adj.add(new ArrayList<>());
+
+  public Graph(int totalVertices) {
+    this.totalVertices = totalVertices;
+    listaAdjacencia = new ArrayList<>();
+    for (int i = 0; i < totalVertices; i++) {
+      listaAdjacencia.add(new ArrayList<>());
     }
   }
-  public void addEdge(int u, int v, double weight) {
-    adj.get(u).add(new Node(v, weight));
-    adj.get(v).add(new Node(u, weight));
+
+  public void adicionarAresta(int origem, int destino, double distancia) {
+    listaAdjacencia.get(origem).add(new Adjacency(destino, distancia));
+    listaAdjacencia.get(destino).add(new Adjacency(origem, distancia)); // grafo não-direcional
   }
-  public List<Integer> dijkstra(int src, int dest, String[] capitals) {
-    double[] dist = new double[V];
-    int[] prev = new int[V];
-    Arrays.fill(dist, Double.POSITIVE_INFINITY);
-    Arrays.fill(prev, -1);
-    dist[src] = 0;
-    PriorityQueue<Node> pq = new PriorityQueue<>((a, b) -> Double.compare(a.weight, b.weight));
-    pq.offer(new Node(src, 0));
-    while (!pq.isEmpty()) {
-      Node node = pq.poll();
-      int u = node.vertex;
-      for (Node neighbor : adj.get(u)) {
-        int v = neighbor.vertex;
-        double weight = neighbor.weight;
-        if (dist[u] + weight < dist[v]) {
-          dist[v] = dist[u] + weight;
-          prev[v] = u;
-          pq.offer(new Node(v, dist[v]));
+
+  public List<Integer> encontrarMenorCaminhoDijkstra(int origem, int destino, String[] nomesCapitais) {
+    double[] distancias = new double[totalVertices];
+    int[] anteriores = new int[totalVertices]; // Para reconstrução do caminho
+    Arrays.fill(distancias, Double.POSITIVE_INFINITY);
+    Arrays.fill(anteriores, -1);
+    distancias[origem] = 0;
+
+    PriorityQueue<Adjacency> filaPrioridade = new PriorityQueue<>(
+      (a, b) -> Double.compare(a.distancia, b.distancia)
+    );
+    filaPrioridade.offer(new Adjacency(origem, 0));
+
+    while (!filaPrioridade.isEmpty()) {
+      Adjacency atual = filaPrioridade.poll();
+      int verticeAtual = atual.destino;
+
+      for (Adjacency vizinho : listaAdjacencia.get(verticeAtual)) {
+        int verticeVizinho = vizinho.destino;
+        double pesoAresta = vizinho.distancia;
+
+        if (distancias[verticeAtual] + pesoAresta < distancias[verticeVizinho]) {
+          distancias[verticeVizinho] = distancias[verticeAtual] + pesoAresta;
+          anteriores[verticeVizinho] = verticeAtual;
+          filaPrioridade.offer(new Adjacency(verticeVizinho, distancias[verticeVizinho]));
         }
       }
     }
-    List<Integer> path = new ArrayList<>();
-    for (int at = dest; at != -1; at = prev[at]) {
-      path.add(at);
+
+    // Reconstrução do caminho
+    List<Integer> caminho = new ArrayList<>();
+    for (int atual = destino; atual != -1; atual = anteriores[atual]) {
+      caminho.add(atual);
     }
-    Collections.reverse(path);
-    if (dist[dest] == Double.POSITIVE_INFINITY) {
-      System.out.println("Não há caminho entre " + capitals[src] + " e " + capitals[dest]);
+    Collections.reverse(caminho);
+
+    // Verificação e exibição do resultado
+    if (distancias[destino] == Double.POSITIVE_INFINITY) {
+      System.out.println("Não há caminho entre " + nomesCapitais[origem] + " e " + nomesCapitais[destino]);
       return new ArrayList<>();
     }
-    System.out.println("Menor distância entre " + capitals[src] + " e " + capitals[dest] + ": " + dist[dest] + " km");
+
+    System.out.println("Menor distância entre " + nomesCapitais[origem] + " e " + nomesCapitais[destino] + ": " + distancias[destino] + " km");
     System.out.print("Caminho: ");
-    for (int i = 0; i < path.size(); i++) {
-      System.out.print(capitals[path.get(i)]);
-      if (i < path.size() - 1) {
+    for (int i = 0; i < caminho.size(); i++) {
+      System.out.print(nomesCapitais[caminho.get(i)]);
+      if (i < caminho.size() - 1) {
         System.out.print(" -> ");
       }
     }
     System.out.println();
-    return path;
+
+    return caminho;
   }
 }
