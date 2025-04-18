@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class Graph {
-  private int totalVertices; // Quantidade total de vértices
-  private List<List<Adjacency>> listaAdjacencia; // Lista de adjacência
+  private int totalVertices;
+  private List<List<Adjacency>> listaAdjacencia;
 
-  // Classe interna representando um vizinho (nó adjacente)
   class Adjacency {
-    int destino; // Vértice de destino
-    double distancia; // Peso (distância) da aresta
+    int destino;
+    double distancia;
 
     Adjacency(int destino, double distancia) {
       this.destino = destino;
@@ -31,19 +30,18 @@ public class Graph {
 
   public void adicionarAresta(int origem, int destino, double distancia) {
     listaAdjacencia.get(origem).add(new Adjacency(destino, distancia));
-    listaAdjacencia.get(destino).add(new Adjacency(origem, distancia)); // grafo não-direcional
+    listaAdjacencia.get(destino).add(new Adjacency(origem, distancia));
   }
 
   public List<Integer> encontrarMenorCaminhoDijkstra(int origem, int destino, String[] nomesCapitais) {
     double[] distancias = new double[totalVertices];
-    int[] anteriores = new int[totalVertices]; // Para reconstrução do caminho
+    int[] anteriores = new int[totalVertices];
     Arrays.fill(distancias, Double.POSITIVE_INFINITY);
     Arrays.fill(anteriores, -1);
     distancias[origem] = 0;
 
     PriorityQueue<Adjacency> filaPrioridade = new PriorityQueue<>(
-      (a, b) -> Double.compare(a.distancia, b.distancia)
-    );
+        (a, b) -> Double.compare(a.distancia, b.distancia));
     filaPrioridade.offer(new Adjacency(origem, 0));
 
     while (!filaPrioridade.isEmpty()) {
@@ -62,20 +60,19 @@ public class Graph {
       }
     }
 
-    // Reconstrução do caminho
     List<Integer> caminho = new ArrayList<>();
     for (int atual = destino; atual != -1; atual = anteriores[atual]) {
       caminho.add(atual);
     }
     Collections.reverse(caminho);
 
-    // Verificação e exibição do resultado
     if (distancias[destino] == Double.POSITIVE_INFINITY) {
       System.out.println("Não há caminho entre " + nomesCapitais[origem] + " e " + nomesCapitais[destino]);
       return new ArrayList<>();
     }
 
-    System.out.println("Menor distância entre " + nomesCapitais[origem] + " e " + nomesCapitais[destino] + ": " + distancias[destino] + " km");
+    System.out.println("Menor distância entre " + nomesCapitais[origem] + " e " + nomesCapitais[destino] + ": "
+        + distancias[destino] + " km");
     System.out.print("Caminho: ");
     for (int i = 0; i < caminho.size(); i++) {
       System.out.print(nomesCapitais[caminho.get(i)]);
