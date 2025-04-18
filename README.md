@@ -17,3 +17,6 @@ Exibe a rota com as capitais intermediárias e a distância total.
 Interface do Usuário:
 Opção de inserir capitais de origem e destino.
 Exibição do resultado de forma intuitiva.
+
+
+O projeto foi desenvolvido através do live share.
